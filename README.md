@@ -60,6 +60,9 @@ account data with AES-256 (PBKDF2, 600k iterations) and pushes it to the private
 `yujimitobe/cloudcall-secrets` (override with `CLOUDCALL_SECRETS_REPO`). The GitHub account you log in
 with via `gh auth login` needs access to it.
 
+To avoid typing the passphrase, put it in a file and set `CLOUDCALL_BACKUP_PASSFILE=/path/to/file`
+for `bin/backup-secrets` / `bin/restore-secrets`.
+
 ## Starting from scratch (no backup)
 
 1. Create a Cloudflare API token with the **Edit Cloudflare Workers** template (free plan is fine; open
