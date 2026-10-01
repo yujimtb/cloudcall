@@ -1,0 +1,9 @@
+vendor/
+state/
+private/
+node_modules/
+.wrangler/
+relay/public/vendor/
+*.log
+*.enc
+__pycache__/

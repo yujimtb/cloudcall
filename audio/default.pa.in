@@ -1,0 +1,1 @@
+load-module module-native-protocol-unix socket=@SOCKET@ auth-anonymous=1 auth-cookie-enabled=0

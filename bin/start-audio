@@ -1,0 +1,34 @@
+#!/bin/sh
+# Start the PulseAudio server (if needed) and create Dot's virtual audio lines:
+#   dot_speaker (sink)  -> dot_voice (source): what Dot says, used as the microphone of call apps
+#   call_speaker (sink) -> dot_mic (source):   what the caller says, used as Dot's microphone
+set -eu
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+. "$ROOT/lib/common.sh"
+pulse_env
+CTL="$PA/usr/bin/pactl"
+if ! "$CTL" info >/dev/null 2>&1; then
+    mkdir -p "$STATE/pulse" "$(dirname "$PULSE_SOCKET")"
+    sed "s|@SOCKET@|$PULSE_SOCKET|" "$ROOT/audio/default.pa.in" >"$STATE/pulse/default.pa"
+    env -u DISPLAY DBUS_SESSION_BUS_ADDRESS=unix:path=/nonexistent PULSE_STATE_PATH="$STATE/pulse" PULSE_RUNTIME_PATH="$(dirname "$PULSE_SOCKET")" nohup "$PA/usr/bin/pulseaudio" \
+        --daemonize=no --use-pid-file=no --exit-idle-time=-1 --disallow-exit --disable-shm -n \
+        --dl-search-path="$PA_MODULES" --file="$STATE/pulse/default.pa" --log-target=stderr \
+        >"$STATE/pulse/server.log" 2>&1 </dev/null &
+    attempt=0
+    until "$CTL" info >/dev/null 2>&1; do
+        attempt=$((attempt + 1))
+        if [ "$attempt" -gt 50 ]; then
+            cat "$STATE/pulse/server.log" >&2
+            echo "PulseAudio did not start." >&2
+            exit 1
+        fi
+        sleep 0.1
+    done
+fi
+has() { "$CTL" list short "$1" | awk -v name="$2" '$2 == name { found = 1 } END { exit !found }'; }
+has sinks dot_speaker || "$CTL" load-module module-null-sink sink_name=dot_speaker sink_properties=device.description=Dot_Speaker rate=48000 channels=2 >/dev/null
+has sinks call_speaker || "$CTL" load-module module-null-sink sink_name=call_speaker sink_properties=device.description=Call_Speaker rate=48000 channels=2 >/dev/null
+has sources dot_voice || "$CTL" load-module module-remap-source master=dot_speaker.monitor source_name=dot_voice source_properties=device.description=Dot_Voice_to_Call >/dev/null
+has sources dot_mic || "$CTL" load-module module-remap-source master=call_speaker.monitor source_name=dot_mic source_properties=device.description=Dot_Microphone_from_Call >/dev/null
+"$CTL" set-default-sink dot_speaker
+"$CTL" set-default-source dot_mic

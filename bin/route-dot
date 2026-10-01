@@ -1,0 +1,20 @@
+#!/bin/sh
+# Make Dot's lines the default devices and move streams that apps already opened onto them.
+set -eu
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+"$ROOT/bin/start-audio"
+CTL="$ROOT/bin/audioctl"
+SINKS=$("$CTL" -f json list sinks)
+SOURCES=$("$CTL" -f json list sources)
+"$CTL" -f json list sink-inputs | python3 -c '
+import json, sys
+names = {s["index"]: s["name"] for s in json.loads(sys.argv[1])}
+for s in json.load(sys.stdin):
+    if s["properties"].get("application.process.id") and names.get(s["sink"]) != "call_speaker":
+        print(s["index"])' "$SINKS" | while read -r index; do "$CTL" move-sink-input "$index" dot_speaker; done
+"$CTL" -f json list source-outputs | python3 -c '
+import json, sys
+names = {s["index"]: s["name"] for s in json.loads(sys.argv[1])}
+for s in json.load(sys.stdin):
+    if s["properties"].get("application.process.id") and names.get(s["source"]) != "dot_voice":
+        print(s["index"])' "$SOURCES" | while read -r index; do "$CTL" move-source-output "$index" dot_mic; done

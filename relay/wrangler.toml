@@ -1,0 +1,23 @@
+name = "phone-relay"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "Room"
+
+[[durable_objects.bindings]]
+name = "TUNNELS"
+class_name = "Tunnel"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["Tunnel"]

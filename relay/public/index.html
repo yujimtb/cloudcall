@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Dot Call</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body data-role="phone" data-state="idle">
+  <main>
+    <h1>Dot Call</h1>
+    <p id="status">Tap Answer to join.</p>
+    <button id="call">Answer</button>
+    <div class="meter">Your microphone<div class="bar"><div id="mic-level"></div></div></div>
+    <div class="meter">Computer audio<div class="bar"><div id="remote-level"></div></div></div>
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

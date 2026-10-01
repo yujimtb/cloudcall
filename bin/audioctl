@@ -1,0 +1,5 @@
+#!/bin/sh
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+. "$ROOT/lib/common.sh"
+pulse_env
+exec "$PA/usr/bin/pactl" "$@"

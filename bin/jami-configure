@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+"""Point every Jami account at the CloudCall tunnel. Run while Jami is closed (bin/jami runs it automatically)."""
+import glob
+import os
+import subprocess
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SETTINGS = {
+    'proxyEnabled': 'true',
+    'proxyServer': '127.0.0.1:18481',
+    'Account.proxyListEnabled': 'false',
+    'RingNS.uri': 'http://127.0.0.1:18482',
+    'turnEnabled': 'true',
+    'turnServer': '127.0.0.1:3478',
+    'turnServerUserName': 'ring',
+    'turnServerPassword': 'ring',
+    'turnServerRealm': 'ring',
+    'stunEnabled': 'false',
+    'Account.upnpEnabled': 'false',
+    'Account.peerDiscovery': 'false',
+}
+quiet = '--quiet' in sys.argv
+if subprocess.run(['pgrep', '-f', f'^{ROOT}/vendor/jami/usr/bin/jami'], capture_output=True).returncode == 0:
+    sys.exit('Jami is running; quit it first so it does not overwrite the settings.')
+for path in glob.glob(os.path.join(ROOT, 'state/jami/data/jami/*/config.yml')):
+    lines = open(path).read().splitlines()
+    kept = [line for line in lines if line.split(':', 1)[0] not in SETTINGS]
+    block = [f'{key}: {value}' for key, value in SETTINGS.items()]
+    at = next((i for i, line in enumerate(kept) if line.startswith('tls:')), len(kept))
+    updated = '\n'.join(kept[:at] + block + kept[at:]) + '\n'
+    if updated != '\n'.join(lines) + '\n':
+        open(path, 'w').write(updated)
+        print(f'Configured {path}')
+    elif not quiet:
+        print(f'Already configured {path}')

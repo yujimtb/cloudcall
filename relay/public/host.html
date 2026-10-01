@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dot Call Host</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body data-role="host" data-state="idle">
+  <main>
+    <h1>Dot Call Host</h1>
+    <p id="status">Ready.</p>
+    <button id="call">Start call</button>
+    <div class="meter">Dot voice (sent to iPhone)<div class="bar"><div id="mic-level"></div></div></div>
+    <div class="meter">iPhone audio (sent to Dot)<div class="bar"><div id="remote-level"></div></div></div>
+    <div class="host">
+      <div id="qr"></div>
+      <p>Scan with the iPhone camera, or open: <a id="phone-link"></a></p>
+      <button id="ring" class="secondary">Ring iPhone</button>
+      <p id="ring-result"></p>
+    </div>
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

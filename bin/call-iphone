@@ -1,0 +1,17 @@
+#!/bin/sh
+# Browser call: opens the relay host page, rings the iPhone via ntfy and shows a QR code.
+set -eu
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+. "$ROOT/lib/common.sh"
+require_call_env
+"$ROOT/bin/route-dot"
+chrome_env
+export PULSE_SOURCE=dot_voice PULSE_SINK=call_speaker
+RING=1
+if [ "${1:-}" = "--no-ring" ]; then
+    RING=0
+    shift
+fi
+exec "$(chrome_bin)" --user-data-dir="$STATE/chrome/phone-profile" --no-first-run --no-default-browser-check \
+    --use-fake-ui-for-media-stream --autoplay-policy=no-user-gesture-required "$@" \
+    "$RELAY_URL/host#room=$ROOM&auto=1&ring=$RING&ntfy=$NTFY_TOPIC"

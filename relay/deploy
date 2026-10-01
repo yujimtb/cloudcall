@@ -1,0 +1,34 @@
+#!/bin/sh
+# Deploy (or update) the Cloudflare Worker relay. Creates private/call.env with fresh secrets on first run.
+set -eu
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+. "$ROOT/lib/common.sh"
+cd "$ROOT/relay"
+TOKEN_FILE="$PRIVATE/cf-token"
+[ -s "$TOKEN_FILE" ] || { echo "Save a Cloudflare 'Edit Cloudflare Workers' API token to $TOKEN_FILE first." >&2; exit 1; }
+CLOUDFLARE_API_TOKEN=$(tr -d ' \r\n' <"$TOKEN_FILE")
+export CLOUDFLARE_API_TOKEN
+random() { head -c "$1" /dev/urandom | base64 | tr '+/' '-_' | tr -d '=\n'; }
+mkdir -p "$PRIVATE"
+chmod 700 "$PRIVATE"
+if [ ! -f "$CALL_ENV" ]; then
+    umask 077
+    {
+        echo "RELAY_URL="
+        echo "ROOM=$(random 24)"
+        echo "NTFY_TOPIC=dot-call-$(head -c 12 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+        echo "TUNNEL_SECRET=$(random 32)"
+    } >"$CALL_ENV"
+    echo "Created $CALL_ENV with new secrets."
+fi
+. "$CALL_ENV"
+[ -d node_modules ] || npm ci --no-audit --no-fund
+mkdir -p public/vendor
+cp node_modules/qrcode-generator/dist/qrcode.mjs public/vendor/qrcode.mjs
+mkdir -p "$ROOT/state"
+npx wrangler deploy 2>&1 | tee "$ROOT/state/deploy.log"
+URL=$(grep -o 'https://[A-Za-z0-9.-]*\.workers\.dev' "$ROOT/state/deploy.log" | head -n 1)
+[ -n "$URL" ] || { echo "Deploy did not report a workers.dev URL." >&2; exit 1; }
+printf '%s' "$TUNNEL_SECRET" | npx wrangler secret put TUNNEL_SECRET
+sed -i "s|^RELAY_URL=.*|RELAY_URL=$URL|" "$CALL_ENV"
+printf '\nRelay deployed at %s\n' "$URL"

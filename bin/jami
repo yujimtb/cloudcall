@@ -1,0 +1,13 @@
+#!/bin/sh
+# Jami for Dot: uses the tunnel, sends Dot's voice (dot_voice) and plays the caller into Dot's mic (call_speaker).
+set -eu
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+. "$ROOT/lib/common.sh"
+"$ROOT/bin/route-dot"
+"$ROOT/bin/jami-tunnel"
+jami_env
+mkdir -p "$XDG_CONFIG_HOME/jami" "$XDG_DATA_HOME/jami" "$XDG_CACHE_HOME"
+[ -f "$XDG_CONFIG_HOME/jami/dring.yml" ] || cp "$ROOT/templates/dring.yml" "$XDG_CONFIG_HOME/jami/dring.yml"
+"$ROOT/bin/jami-configure" --quiet
+export PULSE_SINK=call_speaker PULSE_SOURCE=dot_voice
+exec "$VENDOR/jami/usr/bin/jami" "$@"

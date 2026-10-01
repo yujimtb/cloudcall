@@ -1,0 +1,10 @@
+#!/bin/sh
+# Google Chrome for ChatGPT (Dot): plays into dot_speaker, hears the caller through dot_mic.
+set -eu
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+. "$ROOT/lib/common.sh"
+"$ROOT/bin/start-audio"
+chrome_env
+export PULSE_SINK=dot_speaker PULSE_SOURCE=dot_mic
+[ $# -gt 0 ] || set -- https://chatgpt.com
+exec "$(chrome_bin)" --user-data-dir="$STATE/chrome/profile" --no-first-run --no-default-browser-check "$@"

@@ -1,0 +1,12 @@
+#!/bin/sh
+# Start the local Jami tunnel client in the background (no-op if already running).
+set -eu
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+. "$ROOT/lib/common.sh"
+require_call_env
+if pgrep -f "node $ROOT/relay/jami-tunnel.cjs" >/dev/null; then
+    exit 0
+fi
+mkdir -p "$STATE"
+CLOUDCALL_ENV="$CALL_ENV" nohup node "$ROOT/relay/jami-tunnel.cjs" >>"$STATE/jami-tunnel.log" 2>&1 </dev/null &
+sleep 1
