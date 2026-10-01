@@ -57,7 +57,8 @@ bin/backup-secrets
 
 It encrypts `private/` (relay URL, room, ntfy topic, tunnel secret, Cloudflare token) and the Jami
 account data with AES-256 (PBKDF2, 600k iterations) and pushes it to the private repo
-`<github-user>/cloudcall-secrets` (override with `CLOUDCALL_SECRETS_REPO`).
+`yujimitobe/cloudcall-sectrets` (override with `CLOUDCALL_SECRETS_REPO`). The GitHub account you log in
+with via `gh auth login` needs access to it.
 
 ## Starting from scratch (no backup)
 
