@@ -3,7 +3,7 @@ VENDOR="$ROOT/vendor"
 STATE="$ROOT/state"
 PRIVATE="$ROOT/private"
 CALL_ENV="$PRIVATE/call.env"
-SECRETS_REPO="${CLOUDCALL_SECRETS_REPO:-yujimitobe/cloudcall-sectrets}"
+SECRETS_REPO="${CLOUDCALL_SECRETS_REPO:-yujimitobe/cloudcall-secrets}"
 
 if [ -z "${XDG_RUNTIME_DIR:-}" ] || [ ! -d "$XDG_RUNTIME_DIR" ]; then
     XDG_RUNTIME_DIR=$(ls -dt /dev/shm/codex-orbit-desktop/runtime-* 2>/dev/null | head -n 1)
