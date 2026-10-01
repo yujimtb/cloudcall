@@ -1,16 +1,20 @@
 # CloudCall
 
-Lets **Dot** (ChatGPT voice running in Google Chrome on a locked-down cloud PC) call your iPhone.
+Lets **Dot** (ChatGPT voice running in Google Chrome on a cloud PC) call the owner's iPhone.
 
-The cloud PC can only reach the internet through a TLS-intercepting HTTP proxy that allows HTTPS and
-WebSocket traffic only, so normal calling apps (WebRTC, UDP, TURN) do not work. CloudCall works around
-that with a small Cloudflare Worker:
+This cloud PC reaches the internet through an HTTP proxy that supports HTTPS and WebSocket. Calling
+apps normally connect directly over TCP/UDP, which isn't available here. CloudCall uses a Cloudflare
+Worker on the owner's own Cloudflare account to provide two ways to call:
 
-- **Jami call (rings a locked iPhone):** Jami on the cloud PC reaches the Jami network through a
-  route-limited tunnel (WebSocket -> Worker -> TCP). Only `dhtproxy.jami.net:443`, `ns.jami.net:443`
-  and `turn.jami.net:3478` are reachable through it, and only with the secret key.
-- **Browser call (fallback):** the Worker relays audio between a host page on the cloud PC and a page
-  you open in Safari (ntfy push notification or QR code).
+- **Jami call (rings a locked iPhone):** the Jami client on this PC connects to three Jami services
+  through a WebSocket tunnel to the Worker, which opens the TCP connections:
+  `dhtproxy.jami.net:443` (finding devices, push), `ns.jami.net:443` (usernames) and
+  `turn.jami.net:3478` (call audio relay). The Worker accepts only these three destinations, and only
+  with the secret key from `private/call.env`.
+- **Browser call:** a web page on this PC and a page opened in Safari on the iPhone exchange audio
+  through the Worker over WebSocket (the iPhone is notified via ntfy or a QR code).
+
+Both run only between the owner's own devices and accounts.
 
 Audio is routed with a private PulseAudio server:
 
@@ -38,13 +42,16 @@ Then sign in to ChatGPT in **CloudCall Chrome (Dot)** once.
 
 ## Making a call
 
-1. Open **CloudCall Chrome (Dot)** (opens chatgpt.com).
-2. Open **CloudCall Jami (Dot)** and call `yujimtb`. The iPhone rings even when locked.
-3. Start ChatGPT voice mode after the call connects.
-4. Quit Jami when done (the tunnel uses Cloudflare Durable Object time while Jami runs).
+The owner (yujimtb) has asked Dot to call their iPhone with these steps:
 
-Fallback: **CloudCall Call iPhone (browser)** rings the iPhone through ntfy and shows a QR code; the
-iPhone joins in Safari (must stay unlocked during the call).
+1. Open **CloudCall Chrome (Dot)** (opens chatgpt.com).
+2. Open **CloudCall Jami (Dot)**, select the contact `yujimtb` and press the audio call button.
+   The iPhone rings even when locked.
+3. Start ChatGPT voice mode after the call connects.
+4. Hang up and quit Jami when done (the Jami tunnel uses Cloudflare Durable Object time while Jami runs).
+
+Browser call instead: open **CloudCall Call iPhone (browser)**. It joins the call automatically,
+sends the ntfy notification and shows a QR code; the iPhone answers in Safari and must stay unlocked.
 
 ## Saving secrets
 
