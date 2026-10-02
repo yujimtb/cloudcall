@@ -5,6 +5,21 @@ ROOT=$(cd "$(dirname "$0")" && pwd)
 . "$ROOT/lib/common.sh"
 DESKTOP_DIR="${CLOUDCALL_DESKTOP_DIR:-/workspace}"
 
+case "$ROOT/" in
+/workspace/*)
+    if [ "${CLOUDCALL_ALLOW_WORKSPACE:-}" != 1 ]; then
+        cat >&2 <<WARN
+$ROOT is inside /workspace, which the cloud PC cleans up every few hours (the whole folder,
+including vendor/, state/ and private/, is deleted while Jami, Chrome and PulseAudio keep running).
+Clone into your home folder instead:
+  git clone https://github.com/yujimtb/cloudcall ~/cloudcall && ~/cloudcall/bootstrap.sh
+Set CLOUDCALL_ALLOW_WORKSPACE=1 to install here anyway.
+WARN
+        exit 1
+    fi
+    ;;
+esac
+
 for tool in curl dpkg-deb python3 node npm openssl git gh; do
     command -v "$tool" >/dev/null || { echo "Required tool not found: $tool" >&2; exit 1; }
 done

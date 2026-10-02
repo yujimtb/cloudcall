@@ -28,12 +28,16 @@ Audio is routed with a private PulseAudio server:
 ## Restore after a cloud PC reset
 
 ```sh
-git clone https://github.com/yujimtb/cloudcall /workspace/cloudcall
-cd /workspace/cloudcall
+git clone https://github.com/yujimtb/cloudcall ~/cloudcall
+cd ~/cloudcall
 ./bootstrap.sh                 # downloads PulseAudio, Chrome, Jami into vendor/ (no root needed)
 gh auth status || gh auth login
 bin/restore-secrets            # pulls the encrypted bundle from the private repo; asks for the passphrase
 ```
+
+Keep the kit in your home folder, not under `/workspace`: the cloud PC periodically deletes folders in
+`/workspace` (only the desktop shortcuts written there survive), which removes `vendor/`, `state/` and
+`private/` a few hours after installing. `bootstrap.sh` refuses to run from `/workspace`.
 
 The Cloudflare Worker keeps running between resets, and the restored Jami account is the same device,
 so nothing needs to change on the iPhone.

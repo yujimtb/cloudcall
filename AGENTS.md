@@ -12,6 +12,10 @@
   3478 TCP+UDP (TURN). Port 8081 is used by neko (remote desktop).
 - The Worker tunnel uses a single Durable Object (`idFromName('egress')`) so the TURN server sees one
   client IP (required for TURN-over-TCP `CONNECTION-BIND`).
+- Install location: `~/cloudcall`. Never under `/workspace`; the cloud PC's scratch cleaner renames
+  folders there to `/workspace/.scratch-cleaning-*` and deletes them every few hours, while the running
+  Jami/Chrome/PulseAudio/tunnel processes keep going from deleted files. Desktop shortcuts
+  (`*.desktop` files) in `/workspace` are fine.
 - `XDG_RUNTIME_DIR` (`/dev/shm/codex-orbit-desktop/runtime-*`) changes per session; never hard-code it.
   PulseAudio socket = `$XDG_RUNTIME_DIR/pulse/native` (override with `CLOUDCALL_PULSE_SOCKET`).
 - Never print or commit secrets: `private/` (call.env, cf-token, backup passphrase) and `state/jami/`
